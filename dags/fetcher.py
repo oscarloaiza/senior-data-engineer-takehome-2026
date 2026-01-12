@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta
 import time
+import requests
+import json
+import psycopg2
 
 # The DAG object; we'll need this to instantiate a DAG
 from airflow import DAG
@@ -20,7 +23,7 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 with DAG(
-        'fetcher',
+        'stryker_weather_fetcher_v1',
         default_args=default_args,
         description='To fetch the weather data',
         schedule_interval=timedelta(minutes=5),
@@ -29,33 +32,52 @@ with DAG(
         tags=['take-home'],
 ) as dag:
 
-    # @TODO: Add your function here. Example here: https://airflow.apache.org/docs/apache-airflow/stable/_modules/airflow/example_dags/example_python_operator.html
-    # Hint: How to fetch the weather data from OpenWeatherMap?
-    def my_sleeping_function(random_base):
-        """This is a function that will run within the DAG execution"""
-        time.sleep(random_base)
+    def fetch_weather_data():
+        api_key = "3787bdd14c76e7bd562ba96ab375bf2b"
+        cities = ["San Jose,CR", "Heredia,CR", "Cartago,CR", "Alajuela,CR", "Limon,CR"]
+        
+        conn = psycopg2.connect(host="postgres", database="airflow", user="airflow", password="airflow")
+        cursor = conn.cursor()
+        
+        for city in cities:
+            url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}"
+            response = requests.get(url)
+            if response.status_code == 200:
+                cursor.execute("INSERT INTO staging_weather (city, raw_data) VALUES (%s, %s)",
+                            (city, json.dumps(response.json())))
+        conn.commit()
+        cursor.close()
+        conn.close()
 
     t1 = PythonOperator(
         task_id='ingest_api_data',
-        python_callable=my_sleeping_function,
-        op_kwargs={'random_base': 101.0 / 10},
+        python_callable=fetch_weather_data
     )
 
-    # @TODO: Fill in the below
     t2 = PostgresOperator(
         task_id="create_raw_dataset",
+        postgres_conn_id="postgres_default",
         sql="""
+            CREATE TABLE IF NOT EXISTS staging_weather (
+                city VARCHAR(100), 
+                raw_data JSONB
+            );
             CREATE TABLE IF NOT EXISTS raw_current_weather (
+                id SERIAL PRIMARY KEY,
+                city VARCHAR(100),
+                raw_data JSONB,
+                extracted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
            );
-          """,
+          """
     )
 
-    # @TODO: Fill in the below
     t3 = PostgresOperator(
         task_id="store_dataset",
+        postgres_conn_id="postgres_default",
         sql="""
-            INSERT INTO ...
-          """,
+            INSERT INTO raw_current_weather (city, raw_data)
+            SELECT city, raw_data FROM staging_weather;
+          """
     )
 
-    t1 >> t2 >> t3
+    t2 >> t1 >> t3
