@@ -1,236 +1,72 @@
-# Stryker Take-Home Project — Senior Data Engineer
+# Stryker Senior Data Engineer Challenge - OpenWeather Data Pipeline
 
-**Version 3.0 | Updated: 2026-01**
-
-Welcome to the Stryker Senior Data Engineer take-home exercise. This repository provides a lightweight, opinionated starting point intended to simulate a realistic data engineering workload at Stryker.
-
-This challenge is **not** about completing a large volume of code. Instead, it is designed to surface how you think about data systems, tradeoffs, modeling decisions, scalability, and long-term maintainability.
+## Project Overview
+This repository contains a robust data pipeline designed to ingest, model, and store weather data from the OpenWeatherMap API. The system is built with a focus on **idempotency**, **data quality**, and **scalability**, simulating a production-ready environment for downstream analytics and data science consumers.
 
 ---
 
-## Problem Overview
+## Time Spent
 
-A common responsibility for Senior Data Engineers at Stryker is designing and maintaining robust pipelines that ingest third-party data, model it appropriately, store it efficiently, and make it available for downstream consumers such as analytics, reporting, and data science teams.
+Total Approximate Time: 4.5 hours.
 
-This exercise represents a simplified snapshot of that responsibility.
+**Breakdown:**
 
-To reduce setup overhead, we provide scaffolding for the execution environment (Docker, Airflow, and Postgres). You are encouraged to use, modify, or replace these components if you believe an alternative approach is more appropriate—provided you clearly document your rationale.
+**Research & Learning:** 2 hours (Learning how Airflow works, how tasks are managed, and how to connect to the database inside Docker).
 
----
+**Data Ingestion (Fetcher) Development:** 1.5 hours (API client implementation, staging table logic, and error handling).
 
-## What You’ll Build
+**Data Transformation (Transformer) Development:** 0.5 hours (Developing SQL logic for JSONB extraction and data modeling).
 
-For this project, you will ingest **current weather data** from the  
-[OpenWeatherMap Current Weather API](https://openweathermap.org/current).  
-The free API tier is sufficient; **no paid subscription is required**.
-
-At a high level, the system consists of:
-
-### Core Components (Provided)
-
-- **Airflow**  
-  Used to orchestrate ingestion and transformation workflows.
-
-- **Postgres**  
-  Used as the analytical storage layer for both raw and derived datasets.  
-  (You may substitute another database if you prefer.)
-
-- **Docker / Docker Compose**  
-  Used to provide a reproducible local execution environment.
-
----
-
-## Data Flow Expectations
-
-The expected flow is intentionally flexible but should generally include the following stages:
-
-1. **Ingestion (Fetcher DAG)**
-
-   - `fetcher.py` retrieves data from the OpenWeatherMap API.
-   - Data should be validated, normalized, and cleaned as appropriate.
-   - Raw or lightly processed data should be persisted to Postgres.
-   - Design with **schema evolution**, **data quality**, and **idempotency** in mind.
-
-2. **Transformation (Transformer DAG)**
-
-   - `transformer.py` produces one or more derived datasets.
-   - Transformations may be implemented in **Python**, **SQL**, or a hybrid approach.
-   - Derived tables should support historical analysis and downstream analytics use cases.
-
-3. **Consumption**
-   - Assume downstream users will query both raw and transformed datasets.
-   - Queries may include time-series analysis, aggregations, or feature extraction.
-
----
-
-## Design Philosophy
-
-This exercise is intentionally open-ended.
-
-We are far more interested in:
-
-- **How you structure the problem**
-- **Why you make certain design choices**
-- **How you balance simplicity vs. scalability**
-- **How you communicate assumptions and tradeoffs**
-
-Perfection is not expected. Thoughtfulness is.
-
-> **Note:**  
-> If you are uncomfortable with Docker, Airflow, or Postgres, you may replace them with alternatives (e.g., local Python execution, SQLite, dbt, etc.). Just document your decision clearly—we will ask about it during follow-up discussions.
-
----
-
-## Deliverables
-
-Please submit a GitHub pull request containing:
-
-- Source code for:
-  - Data ingestion (fetcher)
-  - Data transformation logic
-- SQL (or equivalent) defining your data model
-- Updates to `README.md` that include:
-  - Design notes
-  - Assumptions
-  - Tradeoffs
-  - Potential next steps
-
----
-
-## Evaluation Criteria
-
-We will evaluate this submission as part of a **Senior Data Engineer** interview loop. Review will focus on:
-
-- **Code quality**
-  - Readability, structure, naming, and maintainability
-- **Data modeling**
-  - Schema design, normalization vs. denormalization, relationships
-- **Data engineering fundamentals**
-  - Idempotency, error handling, observability, performance considerations
-- **Technical judgment**
-  - Tooling choices and architectural tradeoffs
-- **Communication**
-  - Clarity of documentation and reasoning
-
----
-
-## Time Expectations
-
-We recognize that senior candidates have limited availability.
-
-- Expected effort: **~2 hours**
-- Spending more or less time is entirely your choice.
-- Please note your actual time spent in the section below so we can evaluate your work fairly and in context.
-
-If you choose to go beyond the basics (e.g., testing, schema evolution, incremental loads), that’s welcome—but not required.
+**Finalization & Documentation:** 0.5 hours (Git version control, code commenting, and completing the README documentation).
 
 ---
 
 ## Use of Public Resources
 
-We encourage you to attempt this challenge independently.
+Although the Airflow environment and basic DAG structures were already provided, I decided to spend time researching and understanding the technology. Rather than simply inserting code into a platform I had never used before, I wanted to ensure I fully understood how the components connected and how the different tasks connect and work together.
 
-That said, real-world engineering often involves referencing documentation, blog posts, or existing solutions. If you build upon external work, please:
+Therefore, my reflection is that, since I had time to complete the exercise, I prioritized building a solid foundation of knowledge about how Airflow works. This approach allowed me to verify that my solution was not only functional but also aligned with the platform's best practices. This investment ensures that, in future projects, I can navigate and use this technology with greater confidence and efficiency, while also saving time on research.
 
-- Clearly note it in your comments or README
-- Provide links to the original sources
-- Explain what you adapted or changed
+I consulted the following resources for research:
 
-Transparency matters more than originality.
-
----
-
-## Getting Started
-
-### Environment Setup
-
-1. Fork and clone this repository.
-2. Ensure Docker Desktop is installed and running.
-3. Initialize and start the environment:
-
-```bash
-# Initialize folders and Airflow user
-mkdir -p ./logs ./plugins
-echo -e "AIRFLOW_UID=$(id -u)" > .env
-
-# Initialize Airflow metadata DB
-docker-compose up airflow-init
-
-# Start services
-docker-compose up
-```
-
-- Airflow UI: [http://localhost:8080](http://localhost:8080)
-- Username / Password: `airflow / airflow`
-
-If you encounter issues, refer to the official Airflow Docker docs:
-[https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html)
+- [Official Apache Airflow Docummentation](https://airflow.apache.org/docs/)
+- [Astronomer.io](https://www.astronomer.io/docs/learn/overview)
+- [Postgres Documentation](https://www.postgresql.org/docs/current/index.html)
 
 ---
 
-### Implementation Notes
+## Assumptions
 
-- There are several `TODO` markers in the repository—feel free to go beyond them.
-- DAG examples are adapted from the official Airflow tutorial.
-- For database interactions, you may reference:
-
-  - Airflow Postgres Operator documentation
-  - Native Python DB libraries
-  - Any abstraction you deem appropriate
-
-For simplicity, you may store all datasets in the Airflow-managed Postgres instance.
+* **Network Connectivity:** I assumed that the Airflow container had internet access to connect to the OpenWeatherMap API and communicate internally with the Postgres service through the `postgres` host.
+* **Data Uniqueness:** Is assumed that the extraction timestamp is sufficient to identify new records and prevent duplicating data during the transformation process."
+* **Environment Setup:** I assumed that the Postgres database is configured with the default credentials (`airflow/airflow`) and that the `postgres_default` connection is already defined in Airflow.
 
 ---
 
-### Apple Silicon Note
+## Tradeoffs & Design Decisions
 
-If you are using Apple hardware (M1/M2), Docker image compatibility may require additional configuration.
-Reference:
-[https://javascript.plainenglish.io/which-docker-images-can-you-use-on-the-mac-m1-daba6bbc2dc5](https://javascript.plainenglish.io/which-docker-images-can-you-use-on-the-mac-m1-daba6bbc2dc5)
-
----
-
-## Your Notes (README.md)
-
-Use the sections below to document your work.
-
-### Time Spent
-
-Approximate total time spent on the exercise.
-Include any learning or research time if applicable.
+* **SQL for Transformations:** I chose to do the data cleaning directly in the database using SQL instead of Python. This is faster and more efficient because the data doesn't have to move back and forth between Airflow and the database.
+* **Using a Staging Table:** I created a temporary table (staging_weather) to hold the data before moving it to the permanent history. This acts as a safety step to make sure only good data is saved.
+* **Preventing Duplicates:** I added a filter in the SQL code (the WHERE clause) to check for timestamps. This ensures that even if the process runs multiple times, the same data won't be saved twice.
 
 ---
 
-### Assumptions
+## Next Steps / Improvements
 
-List any assumptions you made and how they influenced your design choices.
+If I had more time to evolve this project into a full-scale production environment, I would implement the following:
 
+- **Testing Strategy:** I would add unit tests for the transformation logic and integration tests to ensure the API response matches our expected schema before processing.
+- **Observability & Monitoring**: Implement Slack or Email alerts within the Airflow DAGs to notify the team immediately if an API call fails or if the transformation task encounters an error.
+- **Data Quality Checks:** Integrate a tool like **'Great Expectations'** to automatically validate that temperatures are within a logical range and that no critical fields are missing.
 ---
 
-### Tradeoffs & Design Decisions
+## Instructions to the Evaluator
 
-Describe key decisions you made and alternatives you considered.
-
----
-
-### Next Steps / Improvements
-
-What would you implement next with more time?
-Examples:
-
-- Incremental loads
-- Schema evolution handling
-- Testing strategy
-- Observability / monitoring
-- Performance optimizations
+1. **API Key Setup:** I registered a free account at OpenWeatherMap to obtain an API Key. This key is included in the `fetcher.py` file to allow the pipeline to run immediately.
+2. **Connection Setup:** Ensure the connection `postgres_default` is configured in the Airflow UI (Admin -> Connections) with host `postgres` and credentials `airflow/airflow`.
+3. **Execution:** 
+  * First, trigger the **`stryker_weather_fetcher_v1`** DAG to create tables and pull initial data.
+  * Once it finishes, trigger the **`stryker_weather_transformer_v1`** DAG to process and clean the data.
+4. **Verification:** Query the `current_weather` table in Postgres to see the final structured data.
 
 ---
-
-### Instructions to the Evaluator
-
-Provide any notes or guidance that would help someone reviewing or running your solution.
-
----
-
-Thank you for taking the time to complete this exercise.
-We look forward to discussing your approach and design decisions.

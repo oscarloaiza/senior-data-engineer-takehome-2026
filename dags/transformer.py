@@ -1,9 +1,5 @@
 from datetime import datetime, timedelta
-
-# The DAG object; we'll need this to instantiate a DAG
 from airflow import DAG
-
-# Operators; we need this to operate!
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
 # These args will get passed on to each operator
@@ -25,7 +21,7 @@ with DAG(
         tags=['take-home'],
 ) as dag:
 
-    # @TODO: Fill in the below
+    #Create the table to store the final modeled data
     t1 = PostgresOperator(
         task_id="create_modeled_dataset_table",
         postgres_conn_id="postgres_default",
@@ -40,7 +36,8 @@ with DAG(
         """
     )
 
-    # @TODO: Fill in the below
+    #Extracts nested JSON fields into a structured relational format
+    #The WHERE clause below implements an incremental load strategy to ensure idempotency
     t2 = PostgresOperator(
         task_id="transform_raw_into_modelled",
         postgres_conn_id="postgres_default",
@@ -53,8 +50,9 @@ with DAG(
                 (raw_data -> 'weather' -> 0 ->> 'description'),
                 extracted_at
             FROM raw_current_weather
-            -- EVITA DUPLICADOS: Solo inserta si la fecha es mayor a la última procesada
+            --This line below is to avoid duplicates
             WHERE extracted_at > (SELECT COALESCE(MAX(recorded_at), '1900-01-01') FROM current_weather);
         """
     )
+    #Task order
     t1 >> t2
